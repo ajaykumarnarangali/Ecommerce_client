@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import useAddToCart from '../helpers/addToCart'
 import { Button } from "flowbite-react";
 import { Link } from "react-router-dom";
+import productCategory from '../helpers/ProductCategory';
 
 function Search() {
 
     const [products, setProducts] = useState([]);
     const location = useLocation().search;
+    const [sidebarData,setSidebarData]=useState({sort:undefined,category:undefined});
+    const navigate=useNavigate();
 
-    const addToCart=useAddToCart();
+    const addToCart = useAddToCart();
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location);
@@ -33,11 +36,40 @@ function Search() {
 
     }, [location]);
 
+    const handleSearch=(e)=>{
+        const urlParams=new URLSearchParams(location);
+        if(sidebarData.sort){
+            urlParams.set('sort',sidebarData.sort);
+        }
+        if(sidebarData.category){
+            urlParams.set('category',sidebarData.category);
+        }
+        navigate(`/search?${urlParams}`)
+    }
+
     return (
         <div className='container mx-auto px-4 my-6 relative min-h-screen flex justify-center w-100'>
-            <div className='flex gap-5 flex-wrap justify-center md:justify-start overflow-y-scroll'>
-            <div className='h-full w-96 bg-black'>
-            </div>
+            <div className='flex gap-5 flex-wrap justify-center md:justify-start'>
+                <div className='h-60 w-96 bg-gray-200 flex flex-col items-center px-3'>
+                    <div className="mt-3 flex gap-2 items-center">
+                        <label>Sort:</label>
+                        <select onChange={(e)=>{setSidebarData({...sidebarData,sort:e.target.value})}}>
+                            <option value="asc">Low Price to High</option>
+                            <option value="desc">High Price to Low</option>
+                        </select>
+                    </div>
+                    <div className="mt-3 flex gap-2 items-center">
+                        <label>Category:</label>
+                        <select onChange={(e)=>{setSidebarData({...sidebarData,category:e.target.value})}}>
+                            {
+                                productCategory.map((category,index)=>(
+                                    <option value={category.value} key={index}>{category.label}</option>
+                                ))
+                            }
+                        </select>
+                    </div>
+                    <Button className="w-full mt-2" gradientDuoTone={'purpleToBlue'} type="button" onClick={handleSearch}>Search</Button>
+                </div>
                 {
                     products.length > 0 &&
                     products.map((product) => (
